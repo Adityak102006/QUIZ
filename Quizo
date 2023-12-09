@@ -1,0 +1,128 @@
+import tkinter as tk
+from tkinter import messagebox, ttk
+
+class QuizGame:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Quiz Game")
+        self.master.geometry("600x400")
+
+        self.quiz_data = [
+            {
+                "question": "What is the capital of France?",
+                "choices": ["a) Paris", "b) London", "c) Berlin", "d) Madrid"],
+                "answer": "a) Paris"
+            },
+            {
+                "question": "What is the largest planet in our solar system?",
+                "choices": ["a) Earth", "b) Jupiter", "c) Mars", "d) Venus"],
+                "answer": "b) Jupiter"
+            },
+            {
+                "question": "Which programming language is known for its readability?",
+                "choices": ["a) Java", "b) C++", "c) Python", "d) Ruby"],
+                "answer": "c) Python"
+            }
+        ]
+
+        self.current_question = 0
+        self.score = 0
+
+        # Create styles
+        self.style = ttk.Style()
+        self.style.configure("TFrame", background="#ececec")
+        self.style.configure("TLabel", background="#ececec", font=("Helvetica", 16))
+        self.style.configure("TButton", background="#4caf50", font=("Helvetica", 12), foreground="white")
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        self.frame = ttk.Frame(self.master)
+        self.frame.pack(expand=True, fill="both")
+
+        self.question_label = ttk.Label(self.frame, text="", style="TLabel", wraplength=500, padding=10)
+        self.question_label.pack(pady=20)
+
+        self.choice_buttons = []
+        for i in range(4):
+            button = ttk.Button(self.frame, text="", style="TButton", command=lambda i=i: self.check_answer(i))
+            button.pack(pady=5)
+            self.choice_buttons.append(button)
+
+        self.feedback_label = ttk.Label(self.frame, text="", style="TLabel", padding=10)
+        self.feedback_label.pack(pady=10)
+
+        self.score_label = ttk.Label(self.frame, text="Score: 0/{}".format(len(self.quiz_data)), style="TLabel")
+        self.score_label.pack(pady=10)
+
+        self.next_button = ttk.Button(self.frame, text="NEXT", style="TButton", command=self.next_question, state="disabled")
+        self.next_button.pack(pady=10)
+
+        self.final_score_label = ttk.Label(self.frame, text="", style="TLabel")
+        self.exit_button = ttk.Button(self.frame, text="EXIT", style="TButton", command=self.master.destroy)
+
+        # Show the first question
+        self.show_question()
+
+    def show_question(self):
+        if self.current_question < len(self.quiz_data):
+            question_data = self.quiz_data[self.current_question]
+            self.question_label.config(text=question_data["question"])
+
+            choices = question_data["choices"]
+            for i in range(4):
+                self.choice_buttons[i].config(text=choices[i], state="normal")
+
+            self.feedback_label.config(text="")
+            self.next_button.config(state="disabled")
+        else:
+            self.show_final_score()
+
+    def check_answer(self, choice):
+        question_data = self.quiz_data[self.current_question]
+        selected_choice = self.choice_buttons[choice].cget("text")
+
+        if selected_choice == question_data["answer"]:
+            self.score += 1
+
+        self.feedback_label.config(text="Correct!" if selected_choice == question_data["answer"] else "Incorrect!")
+        self.disable_choice_buttons()
+        self.next_button.config(state="normal")
+        self.update_score_label()
+
+    def next_question(self):
+        self.current_question += 1
+        self.enable_choice_buttons()
+        self.next_button.config(state="disabled")
+        self.show_question()
+
+    def show_final_score(self):
+        final_score_text = "Final Score: {}/{}".format(self.score, len(self.quiz_data))
+        if self.score == len(self.quiz_data):
+            message = "Congratulations! You got a perfect score!"
+        else:
+            message = "Good effort! Try again for a perfect score."
+
+        self.final_score_label.config(text=final_score_text, style="TLabel")
+        self.final_score_label.pack(pady=10)
+        self.feedback_label.config(text=message)
+        self.exit_button.pack(pady=10)
+
+    def disable_choice_buttons(self):
+        for button in self.choice_buttons:
+            button.config(state="disabled")
+
+    def enable_choice_buttons(self):
+        for button in self.choice_buttons:
+            button.config(state="normal")
+
+    def update_score_label(self):
+        self.score_label.config(text="Score: {}/{}".format(self.score, len(self.quiz_data)))
+
+def main():
+    root = tk.Tk()
+    app = QuizGame(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
